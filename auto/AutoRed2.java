@@ -113,7 +113,7 @@ public class AutoRed2 extends LinearOpMode { //Locate Special Object
     int Level = BarCodeLevels[0];   // Need to update when updating start position that is if the BarCodeLevels is reversed based on starting position
     //int StartLevel = 2;
     boolean ObjDetected = false;    // Boolean, for if there Special Object has been detected
-    double BC_Dist = 60; //67.5         // Bar Code Distance
+    double BC_Dist = 75; //67.5         // Bar Code Distance
     double LeftTOFcm = 0.0;             // Time of Flight Measurement in cm
     double RightTOFcm = 0.0;
     double FrontTOFcm = 0.0;
@@ -273,9 +273,9 @@ public class AutoRed2 extends LinearOpMode { //Locate Special Object
                 TurnAmount = -90;
                 break;
             case 2: // Red closest to the warehouse
-                BarCodeLevels[0]=3;
-                BarCodeLevels[2]=1;
-                Level=BarCodeLevels[0];
+//                BarCodeLevels[0]=3;
+//                BarCodeLevels[2]=1;
+//                Level=BarCodeLevels[0];
                 ToTheSide = -650;
                 TurnAmount = -90;
                 break;
@@ -374,13 +374,15 @@ public class AutoRed2 extends LinearOpMode { //Locate Special Object
         // telemetry.addData("fwd-left connection info", WHEEL_FL.getConnectionInfo());
         //telemetry.addData("Level: ", 0);
         telemetry.addLine("NOTICE: MAKE SURE THIS IS THE RIGHT AUTONOMOUS!!");
-        telemetry.addData("Current Auto", "RED closest to CAROUSEL");
+        telemetry.addData("Current Auto", "RED closest to WAREHOUSE");
         telemetry.addLine(" ");
         telemetry.addLine(" ");
         telemetry.addLine(" ");
         if(TOF_Right.getDistance(DistanceUnit.CM) > 15){
             telemetry.addLine("WARNING: It appears that you have either setup the robot wrong or picked the wrong autonomous");
-            telemetry.addData("Check for", "Robot has DUCK SPINNER facing CAROUSEL and the color of the side is RED");
+            telemetry.addData("Check for", "Robot has EYES facing WAREHOUSE and the color of the side is RED");
+            telemetry.addData("Also Check", "If Right Sensor is Working (Less than 819 and facing wall)");
+            telemetry.addData("Right Sensor", TOF_Right.getDistance(DistanceUnit.CM));
             telemetry.addLine(" ");
             telemetry.addLine("If these are both 100% true then ignore warning");
         }else{
@@ -414,7 +416,7 @@ public class AutoRed2 extends LinearOpMode { //Locate Special Object
 
         //LeftTOFcm = TOF_Left.getDistance(DistanceUnit.CM);
 
-        if (TOF_Left.getDistance(DistanceUnit.CM) < BC_Dist + 24) { // If Time of flight sensor is less than 55 cm do this
+        if (TOF_Left.getDistance(DistanceUnit.CM) < BC_Dist) { // If Time of flight sensor is less than 55 cm do this
             Level = BarCodeLevels[1]; // Set level to two
 //            telemetry.addData("Level: ", Level);
 //            telemetry.addData("TOF: ", LeftTOFcm);
@@ -490,17 +492,17 @@ public class AutoRed2 extends LinearOpMode { //Locate Special Object
         drive(1400, 0.5);
         Flapper.setPower(0);
         MoveIntake(IntakeUp, IntakeSpeed);
-//        if(TOF_Right.getDistance(DistanceUnit.CM) > 150) {
-//            BotInWareHouse = false;
-//            crab(600, 0.5);
-//            drive(400, 0.5);
-//            turn(-90, 0.25);
-//            crab(200, 0.25);
-//        }else{
-//            BotInWareHouse = true;
-//            BotNoAuto = false;
-//
-//        }
+       if(TOF_Right.getDistance(DistanceUnit.CM) > 60) {
+            BotInWareHouse = false;
+            crab(-700, 0.5);
+            drive(350, 0.5);
+            turn(90, 0.25);
+            crab(300, 0.25);
+       }else{
+            BotInWareHouse = true;
+            BotNoAuto = false;
+
+       }
 
 
 
@@ -809,16 +811,16 @@ public class AutoRed2 extends LinearOpMode { //Locate Special Object
                     }
                 }
                 break;
-            case 1: case 3:
+            case 1:
 
-                if(!ObjDetected && Level == 3){
-                    if(LeftTOFcm < 800){
-                        LeftSensor = true;
-                    }else{
-                        LeftSensor = false;
-                        Level = 2;
-                    }
-                }
+//                if(!ObjDetected && Level == 3){
+//                    if(LeftTOFcm < 800){
+//                        LeftSensor = true;
+//                    }else{
+//                        LeftSensor = false;
+//                        Level = 2;
+//                    }
+//                }
 
                 break;
             default:

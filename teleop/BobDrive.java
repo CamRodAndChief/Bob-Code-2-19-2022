@@ -74,12 +74,12 @@ public class BobDrive extends LinearOpMode {
     final double MidDriveSpeed = 0.35; // Max Throttle for the Drive Motors When In Micro - Value Between 0 and 1
     final double MidCrabSpeed = 0.4; // Max Throttle for the Drive Motors When In Micro - Value Between 0 and 1
     final double MidTurnSpeed = 0.3; // Max Throttle for the Drive Motors When In Micro - Value Between 0 and 1
-    final double TTSpeed = 0.5; // Speed for the Turn Table Drive Motors - Value Between 0 and 1
-    final double FlapperSpeed = 0.45;
+    final double TTSpeed = 0.49; // Speed for the Turn Table Drive Motors - Value Between 0 and 1
+    final double FlapperSpeed = 0.85;
     
     final double BoxOpenPos = 0.8;
     final double BoxFullOpenPos = 0.9;
-    final double BoxClosedPos = 0.2;
+    final double BoxClosedPos = 0.23;
     final double BoxOpenTopLevel = 0.8;
     final double BoxOpenMiddleLevel = 0.8;
     final double BoxOpenBottomLevel = 0.8;
@@ -210,16 +210,32 @@ public class BobDrive extends LinearOpMode {
         IntakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         
-         Frontcm = TOF_Front.getDistance(DistanceUnit.CM);
+
+        /*Frontcm = TOF_Front.getDistance(DistanceUnit.CM);
          if(Frontcm < 20){
              MoveIntake(-300, IntakeSpeed);
-             IntakeDownPos = 0;
-             IntakeUpPos = -300;
+//             IntakeDownPos = 0;
+//             IntakeUpPos = -300;
              telemetry.addData("WARNING", "Robot did not start within 18 inches!");
          }else{
-             IntakeDownPos = 300;
-             IntakeUpPos = -10;
+             MoveIntake(-20, IntakeSpeed);
          }
+
+         if(IntakeArm.getCurrentPosition() == IntakeArm.getTargetPosition()) {
+             IntakeArm.setPower(0);
+
+
+             IntakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+             IntakeArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+         }
+         */
+
+        IntakeArm.setPower(-0.1);
+
+
+        IntakeDownPos = 300;
+        IntakeUpPos = -20;
+
 
          
         boxUp = false;
@@ -442,7 +458,7 @@ public class BobDrive extends LinearOpMode {
                 TTS_Motor.setPower(+TTSpeed * gamepad1.right_trigger + 0.2);
                 Bob = "MAD";
             } else if (gamepad1.left_trigger > 0.1) {
-                TTS_Motor.setPower(-TTSpeed * gamepad1.left_trigger + 0.2);
+                TTS_Motor.setPower(-TTSpeed * gamepad1.left_trigger - 0.2);
                 Bob = "MAD";
             }else{
                 TTS_Motor.setPower(0);
@@ -475,20 +491,7 @@ public class BobDrive extends LinearOpMode {
             } else if (gamepad2.left_trigger > 0.1) {
                 Flapper.setPower(+FlapperSpeed);
                 Bob = "MAD";
-            }
-            //Runs the flapper when lid is opening and closing near it
-//            else if(ArmDown && gamepad2.x){
-//                if(LidOpen) {
-//                    if (!intakeUp) {
-//                        Flapper.setPower(0.6);
-//                    }
-//                }else {
-//                    if (!intakeUp) {
-//                        Flapper.setPower(-0.6);
-//                    }
-//                }
-//            }
-            else if(IntakeArmGoUp && arm.getCurrentPosition() < ArmLevelTicks[4] && arm.getCurrentPosition() > 0){
+            }else if(IntakeArmGoUp && arm.getCurrentPosition() < ArmLevelTicks[4] && arm.getCurrentPosition() > 0){
                 Flapper.setPower(-0.6);
             }else if(PickUpBlock){
                 
@@ -627,15 +630,16 @@ public class BobDrive extends LinearOpMode {
 */
         
 
-            if(IntakeArmGoUp && arm.getCurrentPosition() > ArmLevelTicks[4]){
+            if(IntakeArmGoUp && arm.getCurrentPosition() > 50){
                 intakeUp = true;
-                MoveIntake(IntakeUpPos, IntakeSpeed);
+                MoveIntake(IntakeUpPos, IntakeSpeed * 2);
                 //IntakeArm.setPosition(0);
                 IntakeArmGoUp = false;
             }
             
             if(IntakeArmGoUp && arm.getCurrentPosition()<100){
                 Flapper.setPower(0.5);
+                IntakeArm.setPower(0.05);
             }
 
             if(IntakeArmGoUp && arm.getCurrentPosition()>10){
@@ -683,7 +687,7 @@ public class BobDrive extends LinearOpMode {
 
             if(PickUpBlock){
                 if(ArmDown && !boxUp) {
-                    if (!intakeUp && IntakeArm.getCurrentPosition() < IntakeDownPos + 10 && IntakeArm.getCurrentPosition() > IntakeDownPos - 10) {
+                    if(IntakeArm.getCurrentPosition() < IntakeDownPos + 20 && IntakeArm.getCurrentPosition() > IntakeDownPos - 20) {
                         if (!GotBlock) {
                             Flapper.setPower(-FlapperSpeed);
                             Bob = "ANGRY";
@@ -719,11 +723,11 @@ public class BobDrive extends LinearOpMode {
                     intakeUp = false;
                     Lid.setPosition(BoxOpenPos);
                     LidOpen = true;
-                    if(arm.getCurrentPosition() > ArmLevelTicks[7]){
-                        moveArm(0, MicroArmSpeed);
-                        //PickUpBlock = false;
-                    }else
-                    if(IntakeArm.getCurrentPosition() > IntakeDownPos - 20 && IntakeArm.getCurrentPosition() < IntakeDownPos + 20){
+//                    if(arm.getCurrentPosition() > ArmLevelTicks[7]){
+//                        moveArm(0, MicroArmSpeed);
+//                        //PickUpBlock = false;
+//                    }else
+                    if(IntakeArm.getCurrentPosition() > IntakeDownPos - 100 && IntakeArm.getCurrentPosition() < IntakeDownPos + 100){
                         moveArm(0, ArmSpeed);
                         //PickUpBlock = false;
                     }
@@ -906,9 +910,17 @@ public class BobDrive extends LinearOpMode {
             // check with 2 error margin
             //if (arm.getCurrentPosition() > arm.getTargetPosition() - 2 && arm.getCurrentPosition() < arm.getTargetPosition() - 2)
             //    armReachedTarget = true;
+
+            if(IntakeArm.getCurrentPosition() > IntakeDownPos - 2 && IntakeArm.getCurrentPosition() < IntakeDownPos + 2){
+                MoveIntake(10, IntakeSpeed);
+                IntakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                IntakeArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                IntakeDownPos = 10;
+                IntakeUpPos = -300;
+            }
+
         }
     }
-
     enum ArmMotorType {
         Andy20,
         Rev20,
@@ -948,10 +960,10 @@ public class BobDrive extends LinearOpMode {
         if(arm > 10 && arm < 300){
             if(arm < target){
                 moveArm(arm - 10, MicroArmSpeed);
-                MoveIntake(intake + 10, IntakeSpeed);
+                MoveIntake(intake - 10, IntakeSpeed);
             }else if(arm > target){
                 moveArm(arm + 10, MicroArmSpeed);
-                MoveIntake(intake - 10, IntakeSpeed);
+                MoveIntake(intake + 10, IntakeSpeed);
             }
 
         }

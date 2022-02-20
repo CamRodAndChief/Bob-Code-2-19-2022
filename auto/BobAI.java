@@ -144,7 +144,6 @@ public class BobAI extends LinearOpMode {
 
 
         moveArm(150,0.25);
-        MoveIntake(-100, 0.1);
 
         waitForStart();
         runtime.reset();

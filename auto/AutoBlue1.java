@@ -107,10 +107,10 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
 
     int Step = -1;            // Variable to track which step of the of autonomous to perform
     int[] BarCodeLevels = {1, 2, 3}; // An int array for which barcode level corresponds to which level on the birdbath
-    int Level = BarCodeLevels[0];   // Need to update when updating start position that is if the BarCodeLevels is reversed based on starting position
+    int Level = BarCodeLevels[1];   // Need to update when updating start position that is if the BarCodeLevels is reversed based on starting position
     //int StartLevel = 2;
     boolean ObjDetected = false;    // Boolean, for if there Special Object has been detected
-    double BC_Dist = 60; //67.5         // Bar Code Distance
+    double BC_Dist = 70; //67.5         // Bar Code Distance
     double LeftTOFcm = 0.0;             // Time of Flight Measurement in cm
     double RightTOFcm = 0.0;
     double FrontTOFcm = 0.0;
@@ -119,8 +119,8 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
 
     double HubDist = 60;
     double PipeDist = 60;
-    double GapDist = 80;
-    double WarehouseDist = 100;
+    double GapDist = 150;
+    double WarehouseDist = 120;
 
     int WHEEL_FR_pos = 0;           // Front Right Wheel Position in Encoder Steps
     int WHEEL_FL_pos = 0;           // Front Left Wheel Position in Encoder Steps
@@ -133,6 +133,14 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
     double ArmHoldSpeed = 0.1;      // Holding Current For the Arm
     double OpenLidPos = 0.5;
     double ClosedLidPos = 0.0;
+
+
+    double Happy = 0.2;
+    double Sad = 0.5;
+    double Worried = 0.3;
+    double Mad = 0.1;
+    double Angry = 0.05;
+
 
     int IntakeDown = 300;
     int IntakeUp = 0;
@@ -248,9 +256,6 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
                 TurnAmount = -90;
                 break;
             case 2: // Red closest to the warehouse
-                BarCodeLevels[0]=3;
-                BarCodeLevels[2]=1;
-                Level=BarCodeLevels[0];
                 ToTheSide = -650;
                 TurnAmount = -90;
                 break;
@@ -258,15 +263,15 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
                 BarCodeLevels[0]=3;
                 BarCodeLevels[2]=1;
                 Level=BarCodeLevels[0];
-                ToTheSide = -600;
+                ToTheSide = -650;
                 TurnAmount = 90;
                 break;
             case 4: // Blue closest to the warehouse
                 //Collections.reverse(Arrays.asList(BarCodeLevels));
-                //BarCodeLevels[0]=3;
-                //BarCodeLevels[2]=1;
-                //Level=BarCodeLevels[0];
-                ToTheSide = -650;
+                BarCodeLevels[0]=3;
+                BarCodeLevels[2]=1;
+                Level=BarCodeLevels[0];
+                ToTheSide = -600;
                 TurnAmount = 90;
                 break;
             default:
@@ -351,17 +356,25 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
         telemetry.addData("Current Auto", "BLUE closest to CAROUSEL");
         telemetry.addLine(" ");
         telemetry.addLine(" ");
+        telemetry.addData("Object Detection", TOF_Right.getDistance(DistanceUnit.CM));
         telemetry.addLine(" ");
         if(TOF_Left.getDistance(DistanceUnit.CM) > 15){
             telemetry.addLine("WARNING: It appears that you have either setup the robot wrong or picked the wrong autonomous");
             telemetry.addData("Check for", "Robot has DUCK SPINNER facing CAROUSEL and the color of the side is BLUE");
+            telemetry.addData("Also Check", "If Right Sensor is Working (Less than 819 and facing wall)");
+            telemetry.addData("Right Sensor", TOF_Left.getDistance(DistanceUnit.CM));
             telemetry.addLine(" ");
             telemetry.addLine("If these are both 100% true then ignore warning");
+            bob(Sad);
         }else{
             telemetry.addLine("GREAT JOB!!!! Looks like this is the right autonomous!!! Still check to be sure though!");
+            telemetry.addData("Also Check", "If Right Sensor is Working (Less than 819 and facing wall)");
+            telemetry.addData("Right Sensor", TOF_Left.getDistance(DistanceUnit.CM));
+            bob(Happy);
         }
         telemetry.update();
-        Step++;
+
+        //Step++;
 
         // *******************************************************************************
 
@@ -386,13 +399,21 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
         //***** TOF Check *****
         //LeftTOFcm = TOF_Left.getDistance(DistanceUnit.CM);
 
+
+
+
+
         if (TOF_Right.getDistance(DistanceUnit.CM) < BC_Dist) { // If Time of flight sensor is less than 55 cm do this
             Level = BarCodeLevels[1]; // Set level to two
-//            telemetry.addData("Level: ", Level);
-//            telemetry.addData("TOF: ", LeftTOFcm);
-//            telemetry.update();
+            telemetry.addData("Level: ", Level);
+            telemetry.addData("TOF: ", RightTOFcm);
+            telemetry.update();
+            bob(Angry);
             ObjDetected = true;
         } //(TOFcm < BC_Dist)
+
+
+        Step++;
 
         MoveIntake(IntakeDown, IntakeSpeed);
         crab(-300,0.25); // 30 cm Left, speed 0.25
@@ -400,18 +421,21 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
         Flapper.setPower(-0.5); // To help the box get up
         RunArm(ArmLevelTicks[7] - 125, ArmUpSpeed);
 
-        drive(300, 0.5); // cm to the right, speed = 25%
+        drive(400, 0.5); // cm to the right, speed = 25%
         Flapper.setPower(0);
         MoveIntake(IntakeUp, IntakeSpeed);
         // If the Special Object was not Detected in Posistion 2 or 3, set to position 1.
         // If the object is in 1 of 3 locations, only need to measure 2 in order to determine the location
         if (!ObjDetected) {
             Level = BarCodeLevels[2];
-//            telemetry.addData("Level: ", Level);
-//            telemetry.addData("TOF: ", LeftTOFcm);
-//            telemetry.update();
+            telemetry.addData("Level: ", Level);
+            telemetry.addData("TOF: ", LeftTOFcm);
+            telemetry.update();
+            bob(Sad);
             ObjDetected = true;
-        } // (!ObjDetected)
+        }else{
+            bob(Angry);
+        }
 
         if(TOF_Back.getDistance(DistanceUnit.CM) < 800){
             BackSensor = true;
@@ -419,11 +443,13 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
             BackSensor = false;
         }
 
-        crab(-200, 0.25);
+
         turn(-90, 0.5);
-        drive(-100, 0.5);
-        crab(-550, 0.5);
-        drive(150, 0.25);
+        bob(Sad);
+        drive(-50, 0.25);
+        crab(-350, 0.25);
+        drive(100, 0.25);
+        bob(Worried);
 
         Step++; // Move to Next Step
 
@@ -439,6 +465,8 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
         sleep(3000);
         TTS_Motor.setPower(0.0);
 
+        bob(Happy);
+
 
 
         Step++; // Move to Next Step
@@ -453,10 +481,11 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
 
         //True up against the duck spinner wall first
         drive(-50, 0.5);
-        crab(100, 0.5);
-        turn(-90, 0.5);
-        crab(100, 0.25);
-        drive(-280, 0.5);
+        bob(Happy);
+        crab(50, 0.5);
+        turn(-90, 0.25);
+        bob(Sad);
+        drive(-150, 0.25);
 
         if(TOF_Front.getDistance(DistanceUnit.CM) < 800){
             FrontSensor = true;
@@ -475,16 +504,16 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
 
         // Set arm to level indicated by the barcode
         RunArm(ArmLevelTicks[Level], ArmUpSpeed);
+        bob(Worried);
 
         //Road Block Detection
 
         if (AlternateHubRoute){ //TOF_Back.getDistance(DistanceUnit.CM)*0 < HubDist
             //Do Something becuase there was an object in my path******
             AlternateHubRoute = true;
-            crab(-50, 0.1);
+            crab(150, 0.5);
             turn(-45, 0.25);
-            drive(400, 0.5);
-            drive(125 + Level, 0.25);
+            drive(425 + Level, 0.5);
         }
         else{
             AlternateHubRoute = false;
@@ -503,6 +532,7 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
             Lid.setPosition(BoxOpenBottomLevel);
         }
         LidOpen = true;
+        bob(Sad);
         //drive(10,0.5);
         sleep(500); // Time for the object to fall out
         // *******************************************************************************
@@ -510,7 +540,7 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
         Step++;
         if(AlternateHubRoute){
             drive(-100, 0.25);
-            turn(-45, 0.25);
+            turn(-55, 0.25);
 
         }else{
             drive(-80, 0.25);
@@ -518,21 +548,24 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
         }
 
         RunArm(ArmLevelTicks[7], ArmDownSpeed);
+        bob(Happy);
         drive(-100, 0.5);
 
         if(TOF_Right.getDistance(DistanceUnit.CM) < PipeDist){
             BotForward = true;
             GapFree = true;
             BotNoAuto = false;
+            bob(Happy);
         }else{
             BotForward = false;
             GapFree = false;
             BotNoAuto = true;
+            bob(Angry);
 
         }
 
 
-        drive(-350, 0.5);
+        drive(-600, 0.5);
 
 
 
@@ -561,46 +594,8 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
             }else{
                 RightSensor = false;
             }
-            drive(400, 0.5);
-            if(TOF_Back.getDistance(DistanceUnit.CM) < WarehouseDist){
-                GapFree = false;
-                BotInWareHouse = true;
-                BotNoAuto = false;
+            drive(600, 0.5);
 
-                drive(-100, 0.25);
-                crab(-50, 0.5);
-                crab(500, 0.5);
-                drive(2200, 0.5);
-                MoveIntake(IntakeDown, IntakeSpeed);
-                Flapper.setPower(0.5);
-                RunArm(0, ArmDownSpeed);
-                turn(-90, 0.25);
-                Flapper.setPower(0);
-
-                drive(-120, 0.5);
-                MoveIntake(IntakeUp, IntakeSpeed);
-                crab(400, 0.5);
-                crab(100, 0.25);
-
-
-
-
-
-            }else{
-                GapFree = true;
-                BotInWareHouse = false;
-
-                MoveIntake(IntakeDown, IntakeSpeed);
-                sleep(200);
-                Flapper.setPower(0.3);
-                RunArm(0, ArmDownSpeed);
-                drive(1200, 0.5);
-                Flapper.setPower(0);
-                MoveIntake(IntakeUp, IntakeSpeed);
-                sleep(1000);
-
-
-            }
 
 
 
@@ -628,21 +623,67 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
 
         }else if(!GapFree){
 
-            drive(-80, 0.25);
-            drive(450, 0.25);
-            turn(90, 0.25);
-            drive(2200, 0.5);
+            drive(-50, 0.25);
+            drive(525, 0.5);
+            MoveIntake(IntakeDown, IntakeSpeed);
+            Flapper.setPower(0.5);
+            RunArm(0, ArmDownSpeed);
+            turn(90, 0.15);
+            Flapper.setPower(0);
+            MoveIntake(IntakeUp, IntakeSpeed);
+            drive(350, 0.5);
+            RunArm(150, ArmDownSpeed);
+            IntakeArm.setPower(-0.05);
+            drive(2000, 0.5);
+            RunArm(0, ArmDownSpeed);
+            MoveIntake(IntakeUp, IntakeSpeed);
+            sleep(10000);
+
+
+
+
+        }
+
+
+
+        if(TOF_Back.getDistance(DistanceUnit.CM) < WarehouseDist){
+            GapFree = false;
+            BotInWareHouse = true;
+            BotNoAuto = false;
+            bob(Angry);
+
+            drive(-200, 0.25);
+            crab(-50, 0.5);
+            crab(500, 0.5);
+            drive(2300, 0.5);
             MoveIntake(IntakeDown, IntakeSpeed);
             Flapper.setPower(0.5);
             RunArm(0, ArmDownSpeed);
             turn(-90, 0.25);
             Flapper.setPower(0);
 
-            drive(-200, 0.5);
+            drive(-50, 0.5);
             MoveIntake(IntakeUp, IntakeSpeed);
-            crab(400, 0.5);
-            crab(100, 0.25);
+            crab(-400, 0.5);
+            crab(-100, 0.25);
 
+
+
+
+
+        }else{
+            GapFree = true;
+            BotInWareHouse = false;
+            bob(Happy);
+
+            MoveIntake(IntakeDown, IntakeSpeed);
+            drive(200, 0.5);
+            Flapper.setPower(0.3);
+            RunArm(0, ArmDownSpeed);
+            drive(1050, 0.5);
+            Flapper.setPower(0);
+            MoveIntake(IntakeUp, IntakeSpeed);
+            sleep(1000);
 
 
         }
@@ -727,6 +768,12 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
     //******************************
     //********** SubFXNs ***********
     //******************************
+
+
+    private void bob(double face){
+        Eyes.setPosition(face);
+    }
+
 
     private void turn(double angle, double speed) {
 
@@ -864,28 +911,44 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
                 if (!ObjDetected) { // if object not detected then run this
                     if (RightTOFcm < BC_Dist) { // if all of a sudden it sees something than do this
                         Level = BarCodeLevels[0]; // set level to three
-//                        telemetry.addData("Level:", Level);
-//                        telemetry.addData("TOF: ", LeftTOFcm);
-//                        telemetry.update();
+                        telemetry.addData("Level:", Level);
+                        telemetry.addData("TOF: ", RightTOFcm);
+                        telemetry.update();
                         ObjDetected = true;
                         Step += 1;
                     }
                 }
                 break;
-            case 1: case 3:
+            case 1:
 
-                if(!ObjDetected && Level == 3){
-                    if(LeftTOFcm < 800){
-                        LeftSensor = true;
-                    }else{
-                        LeftSensor = false;
-                        Level = 2;
-                    }
-                }
+//                if(!ObjDetected && Level == 3){
+//                    if(RightTOFcm < 800){
+//                        LeftSensor = true;
+//                    }else{
+//                        LeftSensor = false;
+//                        //Level = 2;
+//                    }
+//                }
+
+                telemetry.update();
 
                 break;
             default:
-
+                telemetry.addLine("Robot Detection");
+                telemetry.addData("AlternateHubRoute", AlternateHubRoute);
+                telemetry.addData("BotForward", BotForward);
+                telemetry.addData("BotNoAuto", BotNoAuto);
+                telemetry.addData("GapFree", GapFree);
+                telemetry.addLine(" ");
+                telemetry.addLine("Alliance Shipping Hub Level");
+                telemetry.addData("Level", Level);
+                telemetry.addLine(" ");
+                telemetry.addLine("Robot Data");
+                telemetry.addData("LeftSensor", LeftSensor);
+                telemetry.addData("RightSensor", RightSensor);
+                telemetry.addData("FrontSensor", FrontSensor);
+                telemetry.addData("BackSensor", BackSensor);
+                telemetry.update();
                 break;
         } // end switch case
 
@@ -897,21 +960,7 @@ public class AutoBlue1 extends LinearOpMode { //Locate Special Object
         // telemetry.addData("Front-TOF: ", FrontTOFcm);
         // telemetry.addData("Back-TOF: ", BackTOFcm);
         // telemetry.addLine(" ");
-        telemetry.addLine("Robot Detection");
-        telemetry.addData("AlternateHubRoute", AlternateHubRoute);
-        telemetry.addData("BotForward", BotForward);
-        telemetry.addData("BotNoAuto", BotNoAuto);
-        telemetry.addData("GapFree", GapFree);
-        telemetry.addLine(" ");
-        telemetry.addLine("Alliance Shipping Hub Level");
-        telemetry.addData("Level", Level);
-        telemetry.addLine(" ");
-        telemetry.addLine("Robot Data");
-        telemetry.addData("LeftSensor", LeftSensor);
-        telemetry.addData("RightSensor", RightSensor);
-        telemetry.addData("FrontSensor", FrontSensor);
-        telemetry.addData("BackSensor", BackSensor);
-        telemetry.update();
+
 
     } // end DoStuffWhileMoving
 

@@ -134,6 +134,14 @@ public class AutoRed1 extends LinearOpMode { //Locate Special Object
     double OpenLidPos = 0.5;
     double ClosedLidPos = 0.0;
 
+
+    double Happy = 0.2;
+    double Sad = 0.5;
+    double Worried = 0.3;
+    double Mad = 0.1;
+    double Angry = 0.05;
+
+
     int IntakeDown = 300;
     int IntakeUp = 0;
     double IntakeSpeed = 0.15;
@@ -353,12 +361,17 @@ public class AutoRed1 extends LinearOpMode { //Locate Special Object
         if(TOF_Right.getDistance(DistanceUnit.CM) > 15){
             telemetry.addLine("WARNING: It appears that you have either setup the robot wrong or picked the wrong autonomous");
             telemetry.addData("Check for", "Robot has DUCK SPINNER facing CAROUSEL and the color of the side is RED");
+            telemetry.addData("Also Check", "If Right Sensor is Working (Less than 819 and facing wall)");
+            telemetry.addData("Right Sensor", TOF_Right.getDistance(DistanceUnit.CM));
             telemetry.addLine(" ");
             telemetry.addLine("If these are both 100% true then ignore warning");
+            bob(Sad);
         }else{
             telemetry.addLine("GREAT JOB!!!! Looks like this is the right autonomous!!! Still check to be sure though!");
+            bob(Happy);
         }
         telemetry.update();
+
         //Step++;
 
         // *******************************************************************************
@@ -389,6 +402,7 @@ public class AutoRed1 extends LinearOpMode { //Locate Special Object
             telemetry.addData("Level: ", Level);
             telemetry.addData("TOF: ", LeftTOFcm);
             telemetry.update();
+            bob(Angry);
             ObjDetected = true;
         } //(TOFcm < BC_Dist)
 
@@ -410,8 +424,11 @@ public class AutoRed1 extends LinearOpMode { //Locate Special Object
             telemetry.addData("Level: ", Level);
             telemetry.addData("TOF: ", LeftTOFcm);
             telemetry.update();
+            bob(Sad);
             ObjDetected = true;
-        } // (!ObjDetected)
+        }else{
+            bob(Angry);
+        }
 
         if(TOF_Back.getDistance(DistanceUnit.CM) < 800){
             BackSensor = true;
@@ -420,8 +437,10 @@ public class AutoRed1 extends LinearOpMode { //Locate Special Object
         }
 
         turn(90, 0.5);
-        crab(400, 0.5);
+        bob(Sad);
+        crab(400, 0.25  );
         drive(250, 0.25);
+        bob(Worried);
 
         Step++; // Move to Next Step
 
@@ -437,6 +456,8 @@ public class AutoRed1 extends LinearOpMode { //Locate Special Object
         sleep(3000);
         TTS_Motor.setPower(0.0);
 
+        bob(Happy);
+
 
 
         Step++; // Move to Next Step
@@ -451,9 +472,11 @@ public class AutoRed1 extends LinearOpMode { //Locate Special Object
 
         //True up against the duck spinner wall first
         drive(-50, 0.5);
+        bob(Happy);
         crab(-100, 0.5);
         turn(90, 0.5);
         crab(-100, 0.25);
+        bob(Sad);
         drive(-280, 0.25);
 
         if(TOF_Front.getDistance(DistanceUnit.CM) < 800){
@@ -473,6 +496,7 @@ public class AutoRed1 extends LinearOpMode { //Locate Special Object
 
         // Set arm to level indicated by the barcode
         RunArm(ArmLevelTicks[Level], ArmUpSpeed);
+        bob(Worried);
 
         //Road Block Detection
 
@@ -501,6 +525,7 @@ public class AutoRed1 extends LinearOpMode { //Locate Special Object
             Lid.setPosition(BoxOpenBottomLevel);
         }
         LidOpen = true;
+        bob(Sad);
         //drive(10,0.5);
         sleep(500); // Time for the object to fall out
         // *******************************************************************************
@@ -516,16 +541,19 @@ public class AutoRed1 extends LinearOpMode { //Locate Special Object
         }
 
         RunArm(ArmLevelTicks[7], ArmDownSpeed);
+        bob(Happy);
         drive(-100, 0.5);
 
         if(TOF_Left.getDistance(DistanceUnit.CM) < PipeDist){
             BotForward = true;
             GapFree = true;
             BotNoAuto = false;
+            bob(Happy);
         }else{
             BotForward = false;
             GapFree = false;
             BotNoAuto = true;
+            bob(Angry);
 
         }
 
@@ -559,46 +587,8 @@ public class AutoRed1 extends LinearOpMode { //Locate Special Object
             }else{
                 LeftSensor = false;
             }
-            drive(800, 0.5);
-            if(TOF_Back.getDistance(DistanceUnit.CM) < WarehouseDist){
-                GapFree = false;
-                BotInWareHouse = true;
-                BotNoAuto = false;
+            drive(600, 0.5);
 
-                drive(-500, 0.25);
-                crab(50, 0.5);
-                crab(-500, 0.5);
-                drive(2300, 0.5);
-                MoveIntake(IntakeDown, IntakeSpeed);
-                Flapper.setPower(0.5);
-                RunArm(0, ArmDownSpeed);
-                turn(90, 0.25);
-                Flapper.setPower(0);
-
-                drive(-50, 0.5);
-                MoveIntake(IntakeUp, IntakeSpeed);
-                crab(400, 0.5);
-                crab(100, 0.25);
-
-
-
-
-
-            }else{
-                GapFree = true;
-                BotInWareHouse = false;
-
-                MoveIntake(IntakeDown, IntakeSpeed);
-                sleep(200);
-                Flapper.setPower(0.3);
-                RunArm(0, ArmDownSpeed);
-                drive(1000, 0.5);
-                Flapper.setPower(0);
-                MoveIntake(IntakeUp, IntakeSpeed);
-                sleep(1000);
-
-
-            }
 
 
 
@@ -640,6 +630,50 @@ public class AutoRed1 extends LinearOpMode { //Locate Special Object
             crab(400, 0.5);
             crab(100, 0.25);
 
+
+
+        }
+
+
+
+        if(TOF_Back.getDistance(DistanceUnit.CM) < WarehouseDist){
+            GapFree = false;
+            BotInWareHouse = true;
+            BotNoAuto = false;
+            bob(Angry);
+
+            drive(-200, 0.25);
+            crab(50, 0.5);
+            crab(-500, 0.5);
+            drive(2300, 0.5);
+            MoveIntake(IntakeDown, IntakeSpeed);
+            Flapper.setPower(0.5);
+            RunArm(0, ArmDownSpeed);
+            turn(90, 0.25);
+            Flapper.setPower(0);
+
+            drive(-50, 0.5);
+            MoveIntake(IntakeUp, IntakeSpeed);
+            crab(400, 0.5);
+            crab(100, 0.25);
+
+
+
+
+
+        }else{
+            GapFree = true;
+            BotInWareHouse = false;
+            bob(Happy);
+
+            MoveIntake(IntakeDown, IntakeSpeed);
+            sleep(200);
+            Flapper.setPower(0.3);
+            RunArm(0, ArmDownSpeed);
+            drive(1250, 0.5);
+            Flapper.setPower(0);
+            MoveIntake(IntakeUp, IntakeSpeed);
+            sleep(1000);
 
 
         }
@@ -724,6 +758,12 @@ public class AutoRed1 extends LinearOpMode { //Locate Special Object
     //******************************
     //********** SubFXNs ***********
     //******************************
+
+
+    private void bob(double face){
+        Eyes.setPosition(face);
+    }
+
 
     private void turn(double angle, double speed) {
 
